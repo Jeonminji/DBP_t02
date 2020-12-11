@@ -131,28 +131,28 @@
     ![그래프](https://user-images.githubusercontent.com/48701368/101864744-de537f00-3bb7-11eb-8261-353a12424943.PNG)
 
     ```php
-        // 테이블 표기용 쿼리
-        $query = "SELECT 거래금액 AS price, CONCAT(ROUND(거래금액/10000, 1), '억') AS 거래금액, 
-        CONCAT(년, '년 ', 월, '월') AS 거래년월, CONCAT(년, '년 ', 월, '월 ', 일, '일') AS 거래일자, 
-        CONCAT(법정동, ' ', 지번) AS 주소, CONCAT(전용면적, '㎡') AS 전용면적, 층, CONCAT(TRUNCATE(전용면적,2), '㎡') AS 면적
-        FROM {$_GET['gu']} 
-        WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']}
-        ORDER BY price DESC"; 
+    // 테이블 표기용 쿼리
+    $query = "SELECT 거래금액 AS price, CONCAT(ROUND(거래금액/10000, 1), '억') AS 거래금액, 
+    CONCAT(년, '년 ', 월, '월') AS 거래년월, CONCAT(년, '년 ', 월, '월 ', 일, '일') AS 거래일자, 
+    CONCAT(법정동, ' ', 지번) AS 주소, CONCAT(전용면적, '㎡') AS 전용면적, 층, CONCAT(TRUNCATE(전용면적,2), '㎡') AS 면적
+    FROM {$_GET['gu']} 
+    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']}
+    ORDER BY price DESC"; 
 
-        //차트용 쿼리
-        $chartQuery = "SELECT 거래금액, CONCAT(년, '년 ', 월, '월') AS 거래년월
-        FROM {$_GET['gu']} 
-        WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']}"; 
+    //차트용 쿼리
+    $chartQuery = "SELECT 거래금액, CONCAT(년, '년 ', 월, '월') AS 거래년월
+    FROM {$_GET['gu']} 
+    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']}"; 
 
-        // 지역별 평균 평당 가격을 구하는 쿼리
-        $avgAcreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
-        FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
-                FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 법정동 = '{$_GET['법정동']}' GROUP BY 아파트, 평당가) a";
+    // 지역별 평균 평당 가격을 구하는 쿼리
+    $avgAcreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
+    FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
+    FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 법정동 = '{$_GET['법정동']}' GROUP BY 아파트, 평당가) a";
 
-        // 해당 아파트의 평당 가격을 구하는 쿼리
-        $acreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
-        FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
-            FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 아파트 = '{$name}' GROUP BY 아파트, 평당가) a";
+    // 해당 아파트의 평당 가격을 구하는 쿼리
+    $acreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
+    FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
+    FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 아파트 = '{$name}' GROUP BY 아파트, 평당가) a";
     ```
 
 - #도면보기 를 클릭한 경우 해당 아파트 평수에 맞는 도면을 확인할 수 있다.
