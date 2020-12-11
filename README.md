@@ -56,7 +56,7 @@
 #
 ## **사전 작업**
 ### DB
-- [xml파싱 파이썬 코드](DBP_t02/python/apiParser.py)로 지역구별로 csv파일을 생성했다.
+- [xml파싱 파이썬 코드](https://github.com/yunyezl/DBP_t02/blob/main/python/apiParser.py)로 지역구별로 csv파일을 생성했다.
 
     ![csv](https://user-images.githubusercontent.com/48701368/101868432-af8dd680-3bc0-11eb-98f3-02f52bba7faa.PNG)
 
@@ -67,7 +67,7 @@
     ![insert](https://user-images.githubusercontent.com/48701368/101867960-bbc56400-3bbf-11eb-8437-b11537c679b8.PNG)
 
 ### 도면 이미지
-지역구\법정동\아파트명\전용면적.jpg 경로로 저장되도록 [gfp.py](https://github.com/yunyezl/DBP_t02/blob/main/gfp.py)를 작성하여 아파트 도면이미지를 크롤링했다.
+지역구\법정동\아파트명\전용면적.jpg 경로로 저장되도록 [gfp.py](https://github.com/yunyezl/DBP_t02/blob/main/python/gfp.py)를 작성하여 아파트 도면이미지를 크롤링했다.
 
 ----------------------------------- 경로 사진 추가하기 -----------------------------------
 #
