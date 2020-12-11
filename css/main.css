@@ -160,8 +160,7 @@ th, td {
   padding-bottom: 16px;
 }
 
-/*==================================================================
-[ Fix header ]*/
+
 .table100 {
   position: relative;
   padding-top: 60px;
@@ -178,9 +177,6 @@ th, td {
   max-height: 585px;
   overflow: auto;
 }
-
-
-/*==================================================================
 
 .table100.ver1 th {
   font-family: Lato-Bold;
