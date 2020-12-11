@@ -132,12 +132,11 @@
 
     ```php
     // 테이블 표기용 쿼리
-    $query = "SELECT 거래금액 AS price, CONCAT(ROUND(거래금액/10000, 1), '억') AS 거래금액, 
+    $query = "SELECT 거래금액 AS price, CONCAT(TRUNCATE(거래금액/10000, 1), '억') AS 거래금액, 
     CONCAT(년, '년 ', 월, '월') AS 거래년월, CONCAT(년, '년 ', 월, '월 ', 일, '일') AS 거래일자, 
     CONCAT(법정동, ' ', 지번) AS 주소, CONCAT(전용면적, '㎡') AS 전용면적, 층, CONCAT(TRUNCATE(전용면적,2), '㎡') AS 면적
     FROM {$_GET['gu']} 
-    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']}
-    ORDER BY price DESC"; 
+    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']} ORDER BY 1 DESC";   
 
     //차트용 쿼리
     $chartQuery = "SELECT 거래금액, CONCAT(년, '년 ', 월, '월') AS 거래년월
