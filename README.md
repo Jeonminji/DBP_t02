@@ -56,7 +56,7 @@
 #
 ## **사전 작업**
 ### DB
-- [xml파싱 파이썬 코드]()로 지역구별로 csv파일을 생성했다.
+- [xml파싱 파이썬 코드](DBP_t02/python/apiParser.py)로 지역구별로 csv파일을 생성했다.
 
     ![csv](https://user-images.githubusercontent.com/48701368/101868432-af8dd680-3bc0-11eb-98f3-02f52bba7faa.PNG)
 
@@ -133,7 +133,7 @@
     CONCAT(년, '년 ', 월, '월') AS 거래년월, CONCAT(년, '년 ', 월, '월 ', 일, '일') AS 거래일자, 
     CONCAT(법정동, ' ', 지번) AS 주소, CONCAT(전용면적, '㎡') AS 전용면적, 층, CONCAT(TRUNCATE(전용면적,2), '㎡') AS 면적
     FROM {$_GET['gu']} 
-    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']} ORDER BY 1 DESC";   
+    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']} ORDER BY CAST(CONCAT(년,'-',월,'-',일) AS DATE) DESC";   
 
     //차트용 쿼리
     $chartQuery = "SELECT 거래금액, CONCAT(년, '년 ', 월, '월') AS 거래년월
