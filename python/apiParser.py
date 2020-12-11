@@ -15,7 +15,6 @@ def get_data(gu_code, base_date):
     return res
 
 import xml.etree.ElementTree as ET
-
 def get_items(response):
     root = ET.fromstring(response.content)
     item_list = []
