@@ -121,7 +121,7 @@
 
     최근 3개월 기준 해당 법정동 아파트와 조회 아파트의 평균 평당 가격을 비교 분석한 결과를 알려준다. 
     
-3. 좌측 하단에 위치한 표에서는 가격 높은 순으로 거래 정보를 확인해보며 거래 금액 최고가와 최저가를 알 수 있다. 
+3. 좌측 하단에 위치한 표에서는 최신순으로 거래 정보를 확인해볼 수 있다.
     
 4. 우측 하단에 위치한 지도에서 자세한 위치정보도 확인할 수 있다.
 
@@ -165,3 +165,5 @@
 [Chart.js CDN](https://www.chartjs.org/)
 
 [Chart.js 사용법](https://yeahvely.tistory.com/6)
+
+[KaKao 지도 Web Documentation](https://apis.map.kakao.com/web/documentation/)
