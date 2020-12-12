@@ -81,7 +81,7 @@
     ![인덱스](https://user-images.githubusercontent.com/48701368/101850292-da663380-3b9c-11eb-83d4-d61d6e19a549.png)
 
 
-- 조회 결과 아래와 같은 쿼리가 동작하여 조건에 맞는 아파트 거래 목록과 함께 실거래가 평균 및 위치정보를 한 눈에 볼 수 있다. 지도의 태그]나 목록에서 도면보기를 클릭해서 상세 정보를 조회할 수 있다.
+- 조회 결과 아래와 같은 쿼리가 동작하여 조건에 맞는 아파트 거래 목록과 함께 실거래가 평균 및 위치정보를 한 눈에 볼 수 있다. 지도의 태그나 목록에서 도면보기를 클릭해서 상세 정보를 조회할 수 있다.
 
     ![지도](https://user-images.githubusercontent.com/48701368/101861830-5b7cf500-3bb4-11eb-8cd8-cc9d88a044de.PNG)
 
@@ -143,12 +143,12 @@
     // 지역별 평균 평당 가격을 구하는 쿼리
     $avgAcreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
     FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
-    FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 법정동 = '{$_GET['법정동']}' GROUP BY 아파트, 평당가) a";
+    FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1) AND 법정동 = '{$_GET['법정동']}' GROUP BY 아파트, 평당가) a";
 
     // 해당 아파트의 평당 가격을 구하는 쿼리
     $acreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
     FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
-    FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 아파트 = '{$name}' GROUP BY 아파트, 평당가) a";
+    FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1) AND 아파트 = '{$name}' GROUP BY 아파트, 평당가) a";
     ```
 
 - 도면보기를 클릭한 경우 해당 아파트 평수에 맞는 도면을 확인할 수 있다. 도면이미지를 제공하지 않는 아파트의 경우에는 도면 보기 태그가 없다.
@@ -166,4 +166,4 @@
 
 [Chart.js 사용법](https://yeahvely.tistory.com/6)
 
-[KaKao 지도 Web Documentation](https://apis.map.kakao.com/web/documentation/)
+[KaKao 지도 Web API Documentation](https://apis.map.kakao.com/web/documentation/)
