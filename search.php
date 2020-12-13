@@ -1,7 +1,8 @@
+
 <?php
 // 쿼리 실행문, 중복 사용되어서 함수로 뺐습니다
     function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA) {
-    if($dong == "선택") { # 동 선택 안함
+    if($dong == "전체") { # 동 선택 안함
         $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
         FROM {$gu}
         WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
@@ -63,7 +64,6 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     $list = '';
     $alert = '';
     $path = '';
-
     if ($rows == 0) { //추가 : 사용자가 입력한 조건에 만족하는 아파트가 없을 경우 출력
         $alert = ' <script>
         alert("해당하는 조건의 아파트가 존재하지 않습니다.");
@@ -71,13 +71,12 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     </script>';
     } else{
         while($row = mysqli_fetch_array($result)){
-
             $list .= '<tr><td>';
-            $list .= '<h3>'.$row['아파트'].'</h3>';
+            $list .= '<h3><p onclick="movePos(\''.$row['주소'].'\')" style="cursor:pointer;">'.$row['아파트'].'</p></h3>';
             $list .= '</td><td rowspan="3"><h2><a href="detail.php?name='.$row['아파트'].'&ac='.$row['전용면적'].'&gu='.$gu.'&지번='.$row['지번'].'&법정동='.$row['법정동'].'">'.$row['거래금액'].'</h2></td></tr>';
-            $path = "images/{$gu}/{$dong}/{$row['아파트']}/{$row['면적']}.jpg";
+            $path = "images/{$gu}/{$row['법정동']}/{$row['아파트']}/{$row['면적']}.jpg";
             if(file_exists($path)){
-                $list .= '<tr><td><a id="apt" href="images/'.$gu.'/'.$dong.'/'.$row['아파트'].'/'.$row['면적'].'.jpg">'.$row['면적'].'㎡ 도면보기</td></tr>';
+                $list .= '<tr><td><a id="apt" href="images/'.$gu.'/'.$row['법정동'].'/'.$row['아파트'].'/'.$row['면적'].'.jpg">'.$row['면적'].'㎡ 도면보기</td></tr>';
             }else{
                 $list .= '<tr></tr>';
             }
@@ -111,6 +110,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     }
     div.left {
         float: left;
+        margin: 0 auto;
     }
     html, body {
         width: 100%;
@@ -122,7 +122,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
 <body>
     <div class = "container">
         <div class = "right">
-            <table style="padding-left:10%;">
+            <table style="display: inline-block;">
                 <?= $list ?>
             </table>
         </div>
@@ -199,6 +199,16 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
             }
         });
     });
+
+    function movePos(address){
+        geocoder.addressSearch(address,  function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                var moveLocation = new kakao.maps.LatLng(result[0].y, result[0].x);
+                map.setCenter(moveLocation);
+                map.setLevel(2);
+            }
+        });
+    }
  </script>
 </body>
 </html>
