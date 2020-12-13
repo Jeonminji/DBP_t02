@@ -79,8 +79,8 @@
 
 - **[index.php](https://github.com/yunyezl/DBP_t02/blob/main/index.php)** 페이지에서 원하는 예산과 평수의 범위를 조절한 다음 조회하고 싶은 지역구를 선택한다.
 추가로 법정동을 선택할 수도 있다. 선택 완료 버튼을 누르면 다음과 같은 5개의 옵션 값이 [search.php](https://github.com/yunyezl/DBP_t02/blob/main/search.php)페이지로 전달된다. 
-    - 최소, 최대 예산 - $minA, $maxA
-    - 최소, 최대 평수 - $minB, $maxB
+    - 최소, 최대 평수 - $minA, $maxA
+    - 최소, 최대 예산 - $minB, $maxB
     - 지역구 - $gu
     - 동(선택사항) - $dong
 
@@ -195,7 +195,7 @@
 
 - 윤예지
     - index.php 구현 
-    - search.php 아파트 3개월 평균 실거래가 리스트(도면 제외) 지도 커스텀
+    - search.php 아파트 3개월 평균 실거래가 리스트(도면 제외), 지도 커스텀
     - detail.php 아파트 실거래 상세 테이블, 평당 가격 비교
     - 화면 구성, api -> csv파일화
 
