@@ -136,7 +136,7 @@
             $list .= '</td><td rowspan="3"><h2><a href="detail.php?name='.$row['아파트'].'&ac='.$row['전용면적'].'&gu='.$gu.'&지번='.$row['지번'].'&법정동='.$row['법정동'].'">'.$row['거래금액'].'</h2></td></tr>';
             $path = "images/{$gu}/{$row['법정동']}/{$row['아파트']}/{$row['면적']}.jpg";
             if(file_exists($path)){
-                $list .= '<tr><td><a id="apt" href="images/'.$gu.'/'.$row['법정동'].'/'.$row['아파트'].'/'.$row['면적'].'.jpg">'.$row['면적'].'㎡ 도면보기</td></tr>';
+                $list .= '<tr><td><a id="apt" href="images/'.$gu.'/'.$row['법정동'].'/'.$row['아파트'].'/'.$row['면적'].'.jpg">'.$row['평수'].'평 도면보기</td></tr>';
             }else{
                 $list .= '<tr></tr>';
             }
