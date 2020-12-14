@@ -1,7 +1,7 @@
 
 <?php
 // 쿼리 실행문, 중복 사용되어서 함수로 뺐습니다
-    function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA) {
+    function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, $order) {
     if($dong == "전체") { # 동 선택 안함
         $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
         FROM {$gu}
@@ -10,8 +10,7 @@
             AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
             AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
         GROUP BY 아파트, 거래금액, 주소, 평수, 전용면적, 법정동, 지번
-        ORDER BY ROUND(AVG(거래금액)/10000, 1) DESC
-        "; 
+        ORDER BY ROUND(AVG(거래금액)/10000, 1) {$order}"  ; 
     } else { # 동까지 선택
         $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
         FROM {$gu}
@@ -21,16 +20,19 @@
             AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
             AND 법정동 = '{$dong}'
         GROUP BY 아파트, 거래금액, 주소, 평수, 전용면적, 법정동, 지번
-        ORDER BY ROUND(AVG(거래금액)/10000, 1) DESC
-        "; 
+    ORDER BY ROUND(AVG(거래금액)/10000, 1) {$order}"; 
     }
+
 
     $result = mysqli_query($link, $query);
     return $result;
 }
 
 function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){ 
-    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA);
+    // $query2 =  "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, ANY_VALUE(법정동) as 법정동, ANY_VALUE(지번) as 지번, ANY_VALUE(전용면적) as 전용면적, '{$gu}' as 지역구 
+    // FROM {$gu} WHERE 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) GROUP BY 아파트 ";
+    // $result = mysqli_query($link, $query2);
+    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, 'ASC');
     $apt_address = '';
     $num1 = 0;
     while($row = mysqli_fetch_array($result)) {
@@ -59,7 +61,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     $minA = mysqli_real_escape_string($link, $_POST['minA']);
     $maxA = mysqli_real_escape_string($link, $_POST['maxA']);
     
-    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA);
+    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, 'DESC');
     $rows = mysqli_num_rows($result);
     $list = '';
     $alert = '';
@@ -122,7 +124,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
 <body>
     <div class = "container">
         <div class = "right">
-            <table style="display: inline-block;">
+            <table style="padding-left:5%; padding-right:5%;">
                 <?= $list ?>
             </table>
         </div>
@@ -195,7 +197,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
                 customMarker.setMap(map);
                 // 마커 좌표값 설정
                 bounds.extend(new kakao.maps.LatLng(result[0].y, result[0].x));
-                map.setBounds(bounds); //마커 한눈에 보기
+                map.setBounds(bounds, 0, 0, 0, 0); //마커 한눈에 보기
             }
         });
     });
