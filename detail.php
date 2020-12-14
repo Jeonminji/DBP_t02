@@ -44,10 +44,19 @@
     $acreageResult2 = mysqli_query($link, $acreageQuery);
 
     $p = '';
+    $distinct = 65;
+    $before = '';
     $allAcreage = "SELECT 법정동, 아파트, 전용면적, 지번, '{$_GET['gu']}' as 지역구, ROUND(전용면적/3.305785) AS 평수 FROM {$_GET['gu']} WHERE 아파트 = '{$_GET['name']}' AND 법정동 = '{$_GET['법정동']}' GROUP BY 전용면적, 아파트, 법정동, 지번, 지역구";
     $aA = mysqli_query($link, $allAcreage);
     while($row = mysqli_fetch_array($aA)){
-        $p .= '<p><a href="detail.php?name='.$row['아파트'].'&ac='.$row['전용면적'].'&gu='.$row['지역구'].'&지번='.$row['지번'].'&법정동='.$row['법정동'].'">'.$row['평수'].'평</a> | </p> ';
+        if ($before == $row['평수']) { // 앞에도 25평인데, 뒤에도 25평일때 타입 구분(평수는 같은데 구조는 다른 경우 미세하게 전용면적 차이가 나서 다른 데이터로 인식됨)
+            $distinct++;
+            $p .= '<p><a href="detail.php?name='.$row['아파트'].'&ac='.$row['전용면적'].'&gu='.$row['지역구'].'&지번='.$row['지번'].'&법정동='.$row['법정동'].'">'.$row['평수'].''.chr($distinct).'평</a> | </p> ';
+        } else {
+            $p .= '<p><a href="detail.php?name='.$row['아파트'].'&ac='.$row['전용면적'].'&gu='.$row['지역구'].'&지번='.$row['지번'].'&법정동='.$row['법정동'].'">'.$row['평수'].'평</a> | </p> ';
+            $distinct = 65;
+        }
+        $before = $row['평수'];
     }
 
     $list = '';
