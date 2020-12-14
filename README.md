@@ -94,7 +94,7 @@
     목록에서 아파트 이름을 클릭하면 해당 아파트로 지도가 이동되는 것을 확인 할 수 있고, 지도의 태그(또는 실거래가 평균)나 목록에서 도면보기를 클릭하면 상세 정보를 조회할 수 있다.
 
     
-    ![지도](https://user-images.githubusercontent.com/48701368/101861830-5b7cf500-3bb4-11eb-8cd8-cc9d88a044de.PNG)
+    ![detail](https://user-images.githubusercontent.com/48701368/102041685-77320680-3e13-11eb-860f-d853f3a69c17.PNG)
 
     ```php
 
