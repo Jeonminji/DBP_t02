@@ -1,38 +1,33 @@
-
 <?php
-// 쿼리 실행문, 중복 사용되어서 함수로 뺐습니다
-    function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, $order) {
-    if($dong == "전체") { # 동 선택 안함
-        $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
-        FROM {$gu}
-        WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
-            AND 년 = YEAR(sysdate()) 
-            AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
-            AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
-        GROUP BY 아파트, 거래금액, 주소, 평수, 전용면적, 법정동, 지번
-        ORDER BY ROUND(AVG(거래금액)/10000, 1) {$order}"  ; 
-    } else { # 동까지 선택
-        $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
-        FROM {$gu}
-        WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
-            AND 년 = YEAR(sysdate()) 
-            AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
-            AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
-            AND 법정동 = '{$dong}'
-        GROUP BY 아파트, 거래금액, 주소, 평수, 전용면적, 법정동, 지번
-    ORDER BY ROUND(AVG(거래금액)/10000, 1) {$order}"; 
-    }
-
+// 쿼리 실행문, 중복 사용되어서 함수로 분리
+    function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA) {
+        if($dong == "전체") { # 동 선택 안함
+            $query = "SELECT 아파트, CONCAT(ROUND(ANY_VALUE(AVG(거래금액))/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', ANY_VALUE(지번)) AS 주소, ANY_VALUE(ROUND(전용면적/3.305785)) AS 평수, ANY_VALUE(전용면적) AS 전용면적, TRUNCATE(ANY_VALUE(전용면적), 2) AS 면적, ANY_VALUE(법정동) AS 법정동, ANY_VALUE(지번) AS 지번, '{$gu}' AS 지역구 
+            FROM {$gu}
+            WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
+                        AND 년 = YEAR(sysdate()) 
+                        AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
+                        AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
+            GROUP BY 아파트, 법정동 
+            ORDER BY ROUND(AVG(거래금액)/10000, 1) DESC";
+        } else { # 동까지 선택
+            $query = "SELECT 아파트, CONCAT(ROUND(ANY_VALUE(AVG(거래금액))/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', ANY_VALUE(지번)) AS 주소, ANY_VALUE(ROUND(전용면적/3.305785)) AS 평수, ANY_VALUE(전용면적) AS 전용면적, TRUNCATE(ANY_VALUE(전용면적), 2) AS 면적, ANY_VALUE(법정동) AS 법정동, ANY_VALUE(지번) AS 지번, '{$gu}' AS 지역구 
+            FROM {$gu}
+            WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
+                        AND 년 = YEAR(sysdate()) 
+                        AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
+                        AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
+                        AND 법정동 = '{$dong}'
+            GROUP BY 아파트, 법정동 
+            ORDER BY ROUND(AVG(거래금액)/10000, 1) DESC";
+        }
 
     $result = mysqli_query($link, $query);
     return $result;
 }
 
 function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){ 
-    // $query2 =  "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, ANY_VALUE(법정동) as 법정동, ANY_VALUE(지번) as 지번, ANY_VALUE(전용면적) as 전용면적, '{$gu}' as 지역구 
-    // FROM {$gu} WHERE 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) GROUP BY 아파트 ";
-    // $result = mysqli_query($link, $query2);
-    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, 'ASC');
+    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA);
     $apt_address = '';
     $num1 = 0;
     while($row = mysqli_fetch_array($result)) {
@@ -61,7 +56,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     $minA = mysqli_real_escape_string($link, $_POST['minA']);
     $maxA = mysqli_real_escape_string($link, $_POST['maxA']);
     
-    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, 'DESC');
+    $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA);
     $rows = mysqli_num_rows($result);
     $list = '';
     $alert = '';
@@ -155,11 +150,11 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     // 맵 표시 
     var map = new kakao.maps.Map(container, options);
 
-    // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다 
+    // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성
     var mapTypeControl = new kakao.maps.MapTypeControl();
     map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
 
-    // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다 
+    // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성
     var zoomControl = new kakao.maps.ZoomControl();
     map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
@@ -193,7 +188,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
                     content: content, 
                 });
 
-                // 마커를 지도에 표시합니다. 
+                // 마커를 지도에 표시
                 customMarker.setMap(map);
                 // 마커 좌표값 설정
                 bounds.extend(new kakao.maps.LatLng(result[0].y, result[0].x));
