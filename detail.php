@@ -22,7 +22,7 @@
     CONCAT(년, '년 ', 월, '월') AS 거래년월, CONCAT(년, '년 ', 월, '월 ', 일, '일') AS 거래일자, 
     CONCAT(법정동, ' ', 지번) AS 주소, CONCAT(전용면적, '㎡') AS 전용면적, 층, CONCAT(TRUNCATE(전용면적,2), '㎡') AS 면적
     FROM {$_GET['gu']} 
-    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']} ORDER BY 1 DESC";    
+    WHERE 아파트 = '{$name2}' AND 전용면적 = {$_GET['ac']} ORDER BY CAST(CONCAT(년,'-',월,'-',일) AS DATE) DESC";    
 
     $chartQuery = "SELECT 거래금액, CONCAT(년, '년 ', 월, '월') AS 거래년월
     FROM {$_GET['gu']} 
@@ -31,17 +31,24 @@
     // 지역별 평균 평당 가격을 구하는 쿼리
     $avgAcreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
     FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
-            FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 법정동 = '{$_GET['법정동']}' GROUP BY 아파트, 평당가) a";
+            FROM {$_GET['gu']} WHERE 년 = YEAR(sysdate()) AND 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()) - 2, MONTH(sysdate()) - 3) AND 법정동 = '{$_GET['법정동']}' GROUP BY 아파트, 평당가) a";
 
     // 해당 아파트의 평당 가격을 구하는 쿼리
     $acreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당
     FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
-        FROM {$_GET['gu']} WHERE 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()), MONTH(sysdate()) + 1) AND 아파트 = '{$name}' AND 전용면적 = {$_GET['ac']} GROUP BY 아파트, 평당가) a";
+        FROM {$_GET['gu']} WHERE 년 = YEAR(sysdate()) AND 월 IN (MONTH(sysdate()) - 1, MONTH(sysdate()) - 2, MONTH(sysdate()) - 3) AND 아파트 = '{$name}' AND 전용면적 = {$_GET['ac']} GROUP BY 아파트, 평당가) a";
 
     $result = mysqli_query($link, $query);
     $chartResult = mysqli_query($link, $chartQuery);
     $acreageResult = mysqli_query($link, $avgAcreageQuery);
     $acreageResult2 = mysqli_query($link, $acreageQuery);
+
+    $p = '';
+    $allAcreage = "SELECT 법정동, 아파트, 전용면적, 지번, '{$_GET['gu']}' as 지역구, ROUND(전용면적/3.305785) AS 평수 FROM {$_GET['gu']} WHERE 아파트 = '{$_GET['name']}' AND 법정동 = '{$_GET['법정동']}' GROUP BY 전용면적, 아파트, 법정동, 지번, 지역구";
+    $aA = mysqli_query($link, $allAcreage);
+    while($row = mysqli_fetch_array($aA)){
+        $p .= '<p><a href="detail.php?name='.$row['아파트'].'&ac='.$row['전용면적'].'&gu='.$row['지역구'].'&지번='.$row['지번'].'&법정동='.$row['법정동'].'">'.$row['평수'].'평</a> | </p> ';
+    }
 
     $list = '';
     while($row = mysqli_fetch_array($result)){
@@ -51,7 +58,7 @@
         $list .= '<td class="cell100 column3">'.$row['층'].'</td>';
         $list .= '<td class="cell100 column4">'.$row['면적'].'</td></tr>';
     }
-
+    
     while($row = mysqli_fetch_array($chartResult)){
         //$money[] = $row['거래금액'];
         $money[] = ROUND($row['거래금액']/10000, 1);
@@ -62,8 +69,17 @@
         $지역평당가격 = $row['평당'];
     }
 
-    while($row = mysqli_fetch_array($acreageResult2)){
-        $평당가격 = $row['평당'];
+    while($row = mysqli_fetch_array($acreageResult2)){ // 최근 3개월 거래량이 없는 경우 Null값 나옴, 이 경우 기간 필터 삭제
+        if($row['평당'] == null) {
+            $acreageQuery = "SELECT ROUND(AVG(a.평당가)) as 평당 FROM (SELECT 아파트, AVG(거래금액) AS 거래금액, TRUNCATE(거래금액/(전용면적/3.3), 0) AS 평당가
+                        FROM {$_GET['gu']} WHERE 아파트 = '{$name}' AND 전용면적 = {$_GET['ac']} GROUP BY 아파트, 평당가) a";
+            $acreageResult2 = mysqli_query($link, $acreageQuery);
+            while ($row = mysqli_fetch_array($acreageResult2)){
+                $평당가격 = $row['평당'];
+            }
+        } else {
+            $평당가격 = $row['평당'];
+        }
     }
 
     $gap = abs($지역평당가격 - $평당가격);
@@ -71,6 +87,7 @@
 
     $m = json_encode($money, JSON_NUMERIC_CHECK);
     $d = json_encode($date);
+    // print_r($acreageQuery);
     
 ?>
 
@@ -85,13 +102,18 @@
 <!--===============================================================================================-->	
 	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/animate/animate.css">
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/select2/select2.min.css">
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/perfect-scrollbar/perfect-scrollbar.css">
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
 <!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/table.css">
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
 <!--===============================================================================================-->
 </head>
 <style>
@@ -117,12 +139,13 @@ p {
                 <div style="text-align:center;">
                 <h1><?=$_GET['법정동']?> <?= $name ?></h1><br>
                 서울특별시 <?= $_GET['gu'] ?> <?= $adress ?><br><br>
+                | <?= $p ?><br><br>
                 <!-- 실거래가 그래프 -->
                 <div style='width:100%;'>
                 <canvas id="myChart" width="10" height="4"></canvas>
                 </div>
             <br>
-            <p> 최근 3개월 기준 <?=$_GET['법정동']?>의 평균 평당 가격은 <p id="bold"><?=$지역평당가격?>만원</p>이며, <?=$name?>의 평당 가격은 <p id="bold"><?=$평당가격?>만원</p>입니다. </p>
+            <p> 최근 3개월 기준 <?=$_GET['법정동']?>의 평균 평당 가격은 <p id="bold"><?=$지역평당가격?>만원</p>이며, <?=$_GET['법정동']?> <?=$name?>의 평당 가격은 <p id="bold"><?=$평당가격?>만원</p>입니다. </p>
             평균 평당 가격에 비해 <p id="bold"><?= $gap ?>만원</p> <?= $msg ?><br><br> 
             </div>
             <!-- 실거래가 테이블 -->
