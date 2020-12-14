@@ -29,9 +29,6 @@
 }
 
 function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){ 
-    // $query2 =  "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, ANY_VALUE(법정동) as 법정동, ANY_VALUE(지번) as 지번, ANY_VALUE(전용면적) as 전용면적, '{$gu}' as 지역구 
-    // FROM {$gu} WHERE 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) GROUP BY 아파트 ";
-    // $result = mysqli_query($link, $query2);
     $result = execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, 'ASC');
     $apt_address = '';
     $num1 = 0;
@@ -155,11 +152,11 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
     // 맵 표시 
     var map = new kakao.maps.Map(container, options);
 
-    // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성합니다 
+    // 일반 지도와 스카이뷰로 지도 타입을 전환할 수 있는 지도타입 컨트롤을 생성
     var mapTypeControl = new kakao.maps.MapTypeControl();
     map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT);
 
-    // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성합니다 
+    // 지도 확대 축소를 제어할 수 있는 줌 컨트롤을 생성
     var zoomControl = new kakao.maps.ZoomControl();
     map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
 
@@ -193,7 +190,7 @@ function WriteAddress($link, $gu, $dong, $minB, $maxB, $minA, $maxA){
                     content: content, 
                 });
 
-                // 마커를 지도에 표시합니다. 
+                // 마커를 지도에 표시 
                 customMarker.setMap(map);
                 // 마커 좌표값 설정
                 bounds.extend(new kakao.maps.LatLng(result[0].y, result[0].x));
