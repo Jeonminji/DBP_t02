@@ -87,37 +87,41 @@
     ![인덱스](https://user-images.githubusercontent.com/48701368/101850292-da663380-3b9c-11eb-83d4-d61d6e19a549.png)
 
 
-- **[search.php](https://github.com/yunyezl/DBP_t02/blob/main/search.php)** 에서 아래와 같은 쿼리가 동작한다. 사용자가 검색 조건으로 특정 법정동까지 선택했는지 여부에 따라 where절에서 법정동 = '{$dong}' 을 추가하여 쿼리를 구분했다. 그리고 지도를 츨력할 때와 아파트 목록을 출력할 때 모두 같은 쿼리가 사용되기 때문에 함수(execQuery)로 묶었다. 함수에서 매개변수로 $order값을 받는 이유는 지도의 태그(*오름차순)와 아파트목록(내림차순) 출력시 평균거래금액 정렬을 다르게 하기 위함이다. 지도 태그의 경우 동일 아파트 다른 평수가 존재하는 경우에 태그가 겹침 문제가 있는 것으로 판단되었고, 그 중 최상단에 최고가 태그가 위치하려면 내림차순이 아닌 오름차순 정렬을 사용해야했다.
+- **[search.php](https://github.com/yunyezl/DBP_t02/blob/main/search.php)** 에서 아래와 같은 쿼리가 동작한다. 사용자가 검색 조건으로 특정 법정동까지 선택했는지 여부에 따라 where절에서 법정동 = '{$dong}' 을 추가하여 쿼리를 구분했다. 그리고 지도를 츨력할 때와 아파트 목록을 출력할 때 모두 같은 쿼리가 사용되기 때문에 함수(execQuery)로 묶었다. 
 
     쿼리에서는 사용자가 입력한 예산과 평수의 범위, 지역 값을 받아와서 사용한다. 여기서 평수에 주목할 부분은 평수이다. DB에 저장된 데이터는 평수가 아닌 전용면적이다. 따라서 사용자가 입력한 최소, 최대 평수 값($minA, $maxA)에 3.305785(1평은 약 3.305785㎡)을 곱해서 전용면적으로 변환한 후 평수 조건에 맞는지 검사한다. 또한 최근 3개월 간 거래 정보이면서 최소, 최대 거래금액 값($minB, $maxB)사이에 포함되는지 등을 검사해서 조건에 맞는 아파트 거래 정보를 가져온다. 이 정보는 지도의 태그와 아파트 목록에서 사용된다.
     
     목록에서 아파트 이름을 클릭하면 해당 아파트로 지도가 이동되는 것을 확인 할 수 있고, 지도의 태그(또는 실거래가 평균)나 목록에서 도면보기를 클릭하면 상세 정보를 조회할 수 있다.
 
     
-    ![detail](https://user-images.githubusercontent.com/48701368/102041685-77320680-3e13-11eb-860f-d853f3a69c17.PNG)
+    ![지도](https://user-images.githubusercontent.com/48701368/102092832-cef85e00-3e63-11eb-8a1e-fa7331ff6ff8.PNG)
 
     ```php
 
-       function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA, $order) {
+      function execQuery($link, $gu, $dong, $minB, $maxB, $minA, $maxA) {
         if($dong == "전체") { # 동 선택 안함
-            $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
+            $query = "SELECT 아파트, CONCAT(ROUND(ANY_VALUE(AVG(거래금액))/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', ANY_VALUE(지번)) AS 주소, ANY_VALUE(ROUND(전용면적/3.305785)) AS 평수, ANY_VALUE(전용면적) AS 전용면적, TRUNCATE(ANY_VALUE(전용면적), 2) AS 면적, ANY_VALUE(법정동) AS 법정동, ANY_VALUE(지번) AS 지번, '{$gu}' AS 지역구 
             FROM {$gu}
             WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
-                AND 년 = YEAR(sysdate()) 
-                AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
-                AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
-            GROUP BY 아파트, 거래금액, 주소, 평수, 전용면적, 법정동, 지번
-            ORDER BY ROUND(AVG(거래금액)/10000, 1) {$order}"  ; 
+                        AND 년 = YEAR(sysdate()) 
+                        AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
+                        AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
+            GROUP BY 아파트, 법정동 
+            ORDER BY ROUND(AVG(거래금액)/10000, 1) DESC";
         } else { # 동까지 선택
-            $query = "SELECT 아파트, CONCAT(ROUND(AVG(거래금액)/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', 지번) AS 주소, ROUND(전용면적/3.305785) AS 평수, 전용면적, TRUNCATE(전용면적, 2) AS 면적, 법정동, 지번, '{$gu}' AS 지역구
+            $query = "SELECT 아파트, CONCAT(ROUND(ANY_VALUE(AVG(거래금액))/10000, 1), '억') AS 거래금액, CONCAT(법정동, ' ', ANY_VALUE(지번)) AS 주소, ANY_VALUE(ROUND(전용면적/3.305785)) AS 평수, ANY_VALUE(전용면적) AS 전용면적, TRUNCATE(ANY_VALUE(전용면적), 2) AS 면적, ANY_VALUE(법정동) AS 법정동, ANY_VALUE(지번) AS 지번, '{$gu}' AS 지역구 
             FROM {$gu}
             WHERE ROUND(전용면적) > ROUND({$minA}*3.305785) AND ROUND(전용면적) < ROUND({$maxA}*3.305785) 
-                AND 년 = YEAR(sysdate()) 
-                AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
-                AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
-                AND 법정동 = '{$dong}'
-            GROUP BY 아파트, 거래금액, 주소, 평수, 전용면적, 법정동, 지번
-        ORDER BY ROUND(AVG(거래금액)/10000, 1) {$order}"; 
+                        AND 년 = YEAR(sysdate()) 
+                        AND 월 IN (MONTH(sysdate()) - 3, MONTH(sysdate()) - 2, MONTH(sysdate()) - 1, MONTH(sysdate())) # 3개월치(9-12)
+                        AND 거래금액 > {$minB}*10000 AND 거래금액 < {$maxB}*10000
+                        AND 법정동 = '{$dong}'
+            GROUP BY 아파트, 법정동 
+            ORDER BY ROUND(AVG(거래금액)/10000, 1) DESC";
+        }
+
+        $result = mysqli_query($link, $query);
+        return $result;
     }
 
     ```
@@ -162,7 +166,7 @@
     - 최신순으로 거래의 상세 정보를 보여주는 리스트 
     - 자세한 위치 정보를 보여주는 지도
          
-![그래프](https://user-images.githubusercontent.com/69361613/102091983-df5c0900-3e62-11eb-83da-c82c227e833b.png)
+    ![그래프](https://user-images.githubusercontent.com/69361613/102091983-df5c0900-3e62-11eb-83da-c82c227e833b.png)
 
 
     ```php
@@ -197,7 +201,7 @@
 
 - 아파트 목록이 3개월치 데이터 중 법정동, 아파트명, 평수 등으로 그룹화해서 평균 거래금액이 내림차 순 정렬으로 고정되어있는 상태인데 정렬 기준을 다양하게 선택할 수 있도록 수정
 
-- 아파트 목록을 보면 동일 아파트 동일 평수에 대해서 거래금액이 다르면 구분되서 출력되는데 detail페이지에서 가격 변동은 그래프로 확인할 수 있는 사항이므로 중복되는 사항을 제거
+- 아파트 목록을 보면 동일 아파트 동일 평수에 대해서 거래금액이 다르면 구분되서 출력되는데 detail페이지에서 가격 변동은 그래프로 확인할 수 있는 사항이므로 중복되는 사항을 제거 (수정 완료)
 
 - 특정 아파트 검색 기능 추가
 
