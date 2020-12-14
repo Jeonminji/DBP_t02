@@ -96,7 +96,6 @@ def getImage(dong, apartment):
 def saveImage(dong, apartment):
     gu = '강남구'
 
-
     base_dir = 'C:\domyun'
     os.chdir(base_dir)
 
@@ -128,9 +127,5 @@ for i in range(len(code)):
 
     print(os.path.join(base_dir, gu, dong, apartment))
     if os.path.isdir(os.path.join(base_dir, gu, dong, apartment)): # 로컬에 해당 구+동+아파트이름 파일이 있으면 건너뜀
-        aptList.append(gu+dong+apartment) # 도면 못담은 아파트를 aptList에 담음
         continue
     getImage(dong, apartment)
-
-with open('aptList.txt', 'w') as f:
-    f.writelines((aptList))
